@@ -3,14 +3,14 @@
 A Flutter package to enable osm tile to download along with other features like direction api inclusion and many more
 
 ## Screen shot
-(https://github.com/paraslamsong/osm_offline_download/blob/main/screenshot.png)
+https://github.com/paraslamsong/osm_offline_download/blob/main/screenshot.png
 
 
 ## Getting Started
 
 Install the package with [[flutter pub add osm_offline_download]]
 
-## Some dependency plackages used in this package
+## Dependency plackages used in this package
 1. flutter_map
 2. cached_network_image
 3. path_provider

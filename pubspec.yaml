@@ -13,10 +13,8 @@ dependencies:
   flutter_map: ^0.14.0
   cached_network_image: ^3.2.0
   path_provider: ^2.0.10
-  flutter_cache_manager: ^3.3.0
   location: ^4.4.0
   latlong2: ^0.8.1
-  ripple_animation: ^0.0.1+2
   dio: ^4.0.6
 
 dev_dependencies:
