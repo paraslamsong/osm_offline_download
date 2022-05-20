@@ -1,5 +1,4 @@
 import 'dart:developer' as dev;
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,9 +8,10 @@ import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:osm_offline_download/fetch_direction_service.dart';
 import 'package:osm_offline_download/location_listen_service.dart';
+import 'package:osm_offline_download/map_layers_provider.dart';
+import 'package:osm_offline_download/osm_direction_steps_screen.dart';
 import 'package:osm_offline_download/ripple_point.dart';
 import 'download_map_service.dart';
-import 'map_tile_providers.dart';
 
 // OSM Marker class
 class OSMMarker {
@@ -40,6 +40,10 @@ class OSMMapOfflineController {
 
   void setParent(osmMapBoxState) {
     _osmMapBoxState = osmMapBoxState;
+  }
+
+  void moveToPosition(LatLng latLng, {double? zoom}) {
+    _osmMapBoxState._animateMove(latLng, zoom: zoom);
   }
 
   void addPolylines({
@@ -147,34 +151,56 @@ class OSMMapOfflineController {
     });
   }
 
-  fetchDirection(LatLng startingpoint, LatLng endpoint) async {
+  fetchDirection(BuildContext context,
+      {required LatLng startingpoint, required LatLng endpoint}) async {
     DirectionService directionService = DirectionService();
     await directionService.getDirections(startingpoint, endpoint);
     List<LatLng> points = directionService.directionpoints;
     dev.log(points.length.toString());
-
-    addPolylines(
+    List<Polyline> polylines = [];
+    polylines.add(Polyline(
       points: points,
+      color: Colors.red,
       strokeWidth: 10,
-    );
-
-    addMarkers(
-      markers: [
-        OSMMarker(
-          points.first,
-          rotate: true,
-          height: 20,
-          width: 20,
-          child: const PinPoint(color: Colors.red),
+    ));
+    dev.log(points.length.toString());
+    var markers = [
+      OSMMarker(
+        points.first,
+        rotate: true,
+        height: 20,
+        width: 20,
+        child: const PinPoint(color: Colors.red),
+      ),
+      OSMMarker(
+        points.last,
+        rotate: true,
+        height: 20,
+        width: 20,
+        child: const PinPoint(color: Colors.teal),
+      ),
+    ];
+    List<Marker> markersList = [];
+    for (var marker in markers) {
+      markersList.add(
+        Marker(
+          point: marker.latlng,
+          rotate: marker.rotate,
+          width: marker.width,
+          height: marker.height,
+          builder: (ctx) =>
+              marker.child ??
+              const RipplePoint(
+                repeat: false,
+                duration: Duration(seconds: 3),
+              ),
         ),
-        OSMMarker(
-          points.last,
-          rotate: true,
-          height: 20,
-          width: 20,
-          child: const PinPoint(color: Colors.teal),
-        ),
-      ],
+      );
+    }
+    _osmMapBoxState._gotoNavigation(
+      polylines: polylines,
+      markers: markersList,
+      steps: directionService.steps,
     );
   }
 }
@@ -183,11 +209,19 @@ class OSMMapBox extends StatefulWidget {
   final OSMMapOfflineController controller;
   final bool? locationTrack, enableLocation;
   final Function(LatLng)? onUserLocationChange;
+  final LatLng? center;
+  final double? zoom;
+  final List<Polyline>? polylines;
+  final List<Marker>? markers;
   const OSMMapBox({
     Key? key,
     required this.controller,
     this.locationTrack = false,
     this.enableLocation = false,
+    this.center,
+    this.polylines,
+    this.markers,
+    this.zoom,
     this.onUserLocationChange,
   }) : super(key: key);
   @override
@@ -196,18 +230,22 @@ class OSMMapBox extends StatefulWidget {
     required LatLng eastNorthLatLng,
     required LatLng southWestLatLng,
     Function(double)? onProgress,
-  }) async {}
+  }) async {
+    downloadMap(
+      eastNorthLatLng: eastNorthLatLng,
+      southWestLatLng: southWestLatLng,
+      onProgress: onProgress,
+    );
+  }
 }
 
 class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
   String imagePath = "";
   final MapController _controller = MapController();
   late final OSMMapOfflineController osmMapOfflineController;
-
   List<Polyline> polylines = [];
   List<Polygon> polygons = [];
   List<Marker> customMarkers = [];
-
   Marker? currentLocationMarker;
   bool locationTrack = false;
   bool enableLocation = false;
@@ -216,12 +254,12 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
   void initState() {
     locationTrack = widget.locationTrack!;
     enableLocation = widget.enableLocation!;
+    polylines = widget.polylines ?? [];
+    customMarkers = widget.markers ?? [];
+    _listenToLocationChange();
     super.initState();
     getImagePath();
     osmMapOfflineController = widget.controller;
-    if (enableLocation) {
-      _listenToLocationChange();
-    }
   }
 
   String appDirectory = "";
@@ -232,38 +270,13 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
       children: [
         FlutterMap(
           options: MapOptions(
-            center: LatLng(27.6466743, 85.3666588),
-            zoom: 10,
+            center: widget.center ?? LatLng(27.6466743, 85.3666588),
+            zoom: widget.zoom ?? 12,
             minZoom: 3,
             maxZoom: 16,
           ),
           layers: [
-            TileLayerOptions(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              tileProvider: CachedTileProvider(),
-              minZoom: 3,
-              maxZoom: 16,
-              fastReplace: false,
-              backgroundColor: Colors.white,
-              tileBuilder: (BuildContext context, Widget widget, Tile tile) {
-                bool isError = tile.loadError;
-                if (isError) {
-                  int z = tile.coords.z.toInt();
-                  int x = tile.coords.x.toInt();
-                  int y = tile.coords.y.toInt();
-                  String fileName = '${appDirectory}tile-$z-$x-$y.png';
-                  return Image.file(
-                    File(fileName),
-                    fit: BoxFit.fill,
-                  );
-                } else {
-                  return Image(
-                    image: tile.imageProvider,
-                    fit: BoxFit.fill,
-                  );
-                }
-              },
-            ),
+            tileProvider(context, appDirectory),
             PolygonLayerOptions(polygons: polygons),
             PolylineLayerOptions(polylines: polylines),
             MarkerLayerOptions(markers: customMarkers),
@@ -279,12 +292,10 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
         ),
         Positioned(
           top: 0,
-          right: 20,
+          right: 0,
           child: SafeArea(
             child: IconButton(
-              onPressed: () {
-                _animateRotate(0);
-              },
+              onPressed: () => _animateRotate(0),
               color: Colors.white,
               iconSize: 30,
               icon: Container(
@@ -305,34 +316,49 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
   }
 
   LocationNotifier? locationNotifier;
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
 
   _listenToLocationChange() async {
     if (!enableLocation) {
       if (locationNotifier == null) return;
       locationNotifier = null;
+      setState(() => currentLocationMarker = null);
       return;
     }
     locationNotifier = LocationNotifier();
-    locationNotifier!.listenToLocation((LocationData currentLocation) {
-      String lat = currentLocation.latitude!.toStringAsFixed(2);
-      String lng = currentLocation.longitude!.toStringAsFixed(2);
-      String alt = currentLocation.altitude!.toStringAsFixed(2);
-      LatLng latlng =
-          LatLng(currentLocation.latitude!, currentLocation.longitude!);
-      currentLocationMarker = Marker(
-        point: LatLng(currentLocation.latitude!, currentLocation.longitude!),
-        rotate: true,
-        builder: (ctx) => Tooltip(
-          message: "Your location: $lat, $lng, $alt ",
-          triggerMode: TooltipTriggerMode.tap,
-          child: const RipplePoint(repeat: true),
-        ),
-      );
-      if (locationTrack) _animateMove(latlng, zoom: _controller.zoom);
-      setState(() => currentLocationMarker = currentLocationMarker);
-      if (widget.onUserLocationChange == null) return;
-      widget.onUserLocationChange!(latlng);
-    });
+    locationNotifier!.listenToLocation(
+      (LocationData currentLocation) => setLocationMarker(currentLocation),
+    );
+  }
+
+  void setLocationMarker(LocationData currentLocation) {
+    String lat = currentLocation.latitude!.toStringAsFixed(2);
+    String lng = currentLocation.longitude!.toStringAsFixed(2);
+    String alt = currentLocation.altitude!.toStringAsFixed(2);
+    dev.log(lat);
+    dev.log(lng);
+    LatLng latlng = LatLng(
+      currentLocation.latitude!,
+      currentLocation.longitude!,
+    );
+    currentLocationMarker = Marker(
+      point: LatLng(currentLocation.latitude!, currentLocation.longitude!),
+      rotate: true,
+      builder: (ctx) => Tooltip(
+        message: "Your location: $lat, $lng, $alt ",
+        triggerMode: TooltipTriggerMode.tap,
+        child: const RipplePoint(repeat: true),
+      ),
+    );
+    if (locationTrack) _animateMove(latlng, zoom: _controller.zoom);
+    setState(() => currentLocationMarker = currentLocationMarker);
+    if (widget.onUserLocationChange == null) return;
+    widget.onUserLocationChange!(latlng);
   }
 
   void getImagePath() async {
@@ -340,13 +366,6 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     setState(() {
       appDirectory = appDocumentsPath;
     });
-  }
-
-  @override
-  void setState(fn) {
-    if (mounted) {
-      super.setState(fn);
-    }
   }
 
   _animateMove(LatLng latLng, {double? zoom}) {
@@ -419,5 +438,19 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     });
 
     animationController.forward();
+  }
+
+  _gotoNavigation({
+    required List<Polyline> polylines,
+    required List<OSMStep> steps,
+    required List<Marker> markers,
+  }) {
+    showOSMDirectionStepScreen(
+      context,
+      appDirectory: appDirectory,
+      polylines: polylines,
+      steps: steps,
+      markers: markers,
+    );
   }
 }

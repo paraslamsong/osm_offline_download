@@ -27,10 +27,10 @@ class RippleAnimation2 extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _RippleAnimationState createState() => _RippleAnimationState();
+  RippleAnimationState createState() => RippleAnimationState();
 }
 
-class _RippleAnimationState extends State<RippleAnimation2>
+class RippleAnimationState extends State<RippleAnimation2>
     with TickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -79,7 +79,7 @@ class CirclePainter extends CustomPainter {
   }) : super(repaint: _animation);
   final Color color;
   final double minRadius;
-  final wavesCount;
+  final dynamic wavesCount;
   final Animation<double> _animation;
 
   @override
@@ -93,14 +93,14 @@ class CirclePainter extends CustomPainter {
   // animating the opacity according to min radius and waves count.
   void circle(Canvas canvas, Rect rect, double minRadius, int wave,
       double value, int length) {
-    Color _color;
+    Color colorr;
     double r;
     if (wave != 0) {
       double opacity = (1 - ((wave - 1) / length) - value).clamp(0.0, 1.0);
-      _color = color.withOpacity(opacity);
+      colorr = color.withOpacity(opacity);
 
       r = minRadius * (1 + ((wave * value))) * value;
-      final Paint paint = Paint()..color = _color;
+      final Paint paint = Paint()..color = colorr;
       canvas.drawCircle(rect.center, r, paint);
     }
   }

@@ -1,14 +1,19 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:osm_offline_download/osm_map_box.dart';
 
-class MapScreen extends StatelessWidget {
-  MapScreen({Key? key}) : super(key: key);
+class MapScreen extends StatefulWidget {
+  const MapScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MapScreen> createState() => _MapScreenState();
+}
+
+class _MapScreenState extends State<MapScreen> {
   double progress = 0.0;
 
   bool tracking = true;
+
   final OSMMapOfflineController controller = OSMMapOfflineController();
 
   @override
@@ -17,7 +22,7 @@ class MapScreen extends StatelessWidget {
       body: OSMMapBox(
         controller: controller,
         locationTrack: false,
-        enableLocation: true,
+        enableLocation: false,
       ),
       floatingActionButton: StatefulBuilder(
         builder: (context, setState) => Builder(builder: (context) {
@@ -25,9 +30,11 @@ class MapScreen extends StatelessWidget {
             return FloatingActionButton(
               onPressed: () {
                 controller.fetchDirection(
-                  LatLng(27.6822, 85.3176),
-                  LatLng(27.7013, 85.3400),
+                  context,
+                  startingpoint: LatLng(27.6822, 85.3176),
+                  endpoint: LatLng(27.7013, 85.3400),
                 );
+
                 // tracking = !tracking;
                 // controller.setTracking(tracking);
                 // controller.addPolylines(

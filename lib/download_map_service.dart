@@ -62,7 +62,7 @@ Future<void> downloadMap({
   Future<void> saveTile(int x, int y, int z) async {
     String imageUrl = 'https://tile.openstreetmap.org/$z/$x/$y.png';
     await NetworkAssetBundle(Uri.parse(imageUrl)).load("").then((imageData) {
-      String filePath = appDocumentsPath + '/tile-$z-$x-$y.png';
+      String filePath = '$appDocumentsPath/tile-$z-$x-$y.png';
       File file = File(filePath);
       file.writeAsBytes(imageData.buffer.asInt8List());
     }).onError((error, stackTrace) {
@@ -72,13 +72,9 @@ Future<void> downloadMap({
   }
 
   List<TileXYZ> tiles = [];
-  // return;
   for (int zoom = 2; zoom <= 16; zoom++) {
     TileXYZ southwestTile = getTileFromLatLng(southWestLatLng, zoom);
-    // southwestTile.southwest(zoom);
     TileXYZ northeastTile = getTileFromLatLng(eastNorthLatLng, zoom);
-    // northeastTile.northeast(zoom);
-
     List<TileXYZ> zoomTiles = getTilesList(northeastTile, southwestTile);
 
     for (var zoomtile in zoomTiles) {
