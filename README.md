@@ -2,6 +2,9 @@
 
 A Flutter package to enable osm tile to download along with other features like direction api inclusion and many more
 
+## Screen shot
+(https://github.com/paraslamsong/osm_offline_download/blob/main/screenshot.png)
+
 
 ## Getting Started
 
