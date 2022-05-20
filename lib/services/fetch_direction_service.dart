@@ -7,6 +7,7 @@ class OSMStep {
   late double lat, lng;
   late String mofifier, type, pathName;
   late double distance;
+  late List<LatLng> points = [];
   OSMStep.fromMap(map) {
     lat = map['maneuver']['location'][1];
     lng = map['maneuver']['location'][0];
@@ -15,7 +16,11 @@ class OSMStep {
     if (type == "new name") type = "Continue";
     pathName = map['name'] == "" ? "unknown" : map['name'];
     num dis = map["distance"];
-
+    for (var intersection in map['intersections']) {
+      double latitude = intersection['location'][1];
+      double longitude = intersection['location'][0];
+      points.add(LatLng(latitude, longitude));
+    }
     distance = (dis + 0.0);
   }
 }

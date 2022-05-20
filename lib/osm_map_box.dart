@@ -35,17 +35,57 @@ get positions, get zoom, change listen to user locations
 
 ----------------------------------------------------------------------------------------
 */
-class OSMMapOfflineController {
+abstract class OSMMapOfflineController {
+  factory OSMMapOfflineController() {
+    return OSMMapOfflineControllerImplementation();
+  }
+  void setParent(dynamic);
+  void moveToPosition(LatLng latLng, {double? zoom});
+  void addPolylines({
+    required List<LatLng> points,
+    Color? color,
+    double? strokeWidth,
+  });
+  void removePolyline(int index);
+  void addPolygons({
+    required List<LatLng> points,
+    Color? color,
+    Color borderColor = const Color(0xFFFFFF00),
+    double borderStrokeWidth = 0.0,
+    bool isDotted = false,
+    bool disableHolesBorder = false,
+  });
+  void removePolygons(int index);
+  LatLng getCenterPosition();
+  double getZoom();
+  LatLngBounds getBoundary();
+  void animateToPoint(LatLng latLng, {double? zoom});
+  void setTracking(bool enable);
+  void addMarkers({List<OSMMarker> markers = const []});
+
+  void fetchDirection(BuildContext context,
+      {required LatLng startingpoint, required LatLng endpoint});
+}
+
+/* 
+--------------------------------------------------------------------------------------------
+Implementing OSMMapOfflineController 
+--------------------------------------------------------------------------------------------
+*/
+class OSMMapOfflineControllerImplementation implements OSMMapOfflineController {
   late _OSMMapBoxState _osmMapBoxState = _OSMMapBoxState();
 
+  @override
   void setParent(osmMapBoxState) {
     _osmMapBoxState = osmMapBoxState;
   }
 
+  @override
   void moveToPosition(LatLng latLng, {double? zoom}) {
     _osmMapBoxState._animateMove(latLng, zoom: zoom);
   }
 
+  @override
   void addPolylines({
     required List<LatLng> points,
     Color? color,
@@ -63,12 +103,16 @@ class OSMMapOfflineController {
         .setState(() => _osmMapBoxState.polylines = _osmMapBoxState.polylines);
   }
 
+  @override
   void removePolyline(int index) {
-    _osmMapBoxState.polylines.removeAt(index);
+    if (_osmMapBoxState.polylines.length > index) {
+      _osmMapBoxState.polylines.removeAt(index);
+    }
     _osmMapBoxState
         .setState(() => _osmMapBoxState.polylines = _osmMapBoxState.polylines);
   }
 
+  @override
   void addPolygons({
     required List<LatLng> points,
     Color? color,
@@ -91,32 +135,38 @@ class OSMMapOfflineController {
         .setState(() => _osmMapBoxState.polylines = _osmMapBoxState.polylines);
   }
 
+  @override
   void removePolygons(int index) {
     _osmMapBoxState.polylines.removeAt(index);
     _osmMapBoxState
         .setState(() => _osmMapBoxState.polylines = _osmMapBoxState.polylines);
   }
 
+  @override
   LatLng getCenterPosition() {
     double lat = _osmMapBoxState._controller.center.latitude;
     double lng = _osmMapBoxState._controller.center.longitude;
     return LatLng(lat, lng);
   }
 
+  @override
   double getZoom() {
     return _osmMapBoxState._controller.zoom;
   }
 
+  @override
   LatLngBounds getBoundary() {
     LatLngBounds latLngBounds = _osmMapBoxState._controller.bounds!;
     return latLngBounds;
   }
 
-  animateToPoint(LatLng latLng, {double? zoom}) {
+  @override
+  void animateToPoint(LatLng latLng, {double? zoom}) {
     _osmMapBoxState._animateMove(latLng, zoom: zoom);
   }
 
-  setTracking(bool enable) {
+  @override
+  void setTracking(bool enable) {
     _osmMapBoxState.setState(() {
       _osmMapBoxState.locationTrack = enable;
       _osmMapBoxState.enableLocation = enable;
@@ -128,7 +178,8 @@ class OSMMapOfflineController {
     }
   }
 
-  addMarkers({List<OSMMarker> markers = const []}) {
+  @override
+  void addMarkers({List<OSMMarker> markers = const []}) {
     List<Marker> markersList = [];
     for (var marker in markers) {
       markersList.add(
@@ -151,7 +202,8 @@ class OSMMapOfflineController {
     });
   }
 
-  fetchDirection(BuildContext context,
+  @override
+  void fetchDirection(BuildContext context,
       {required LatLng startingpoint, required LatLng endpoint}) async {
     DirectionService directionService = DirectionService();
     await directionService.getDirections(startingpoint, endpoint);
