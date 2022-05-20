@@ -9,73 +9,74 @@ showRouteSteps(
 }) {
   showModalBottomSheet(
       context: context,
+      barrierColor: Colors.black38,
       builder: (ctx) {
         return BottomSheet(
           enableDrag: false,
-          backgroundColor: Colors.transparent,
+          elevation: 0,
+          backgroundColor: Colors.white70,
           onClosing: () => Navigator.pop(context),
           builder: (context) {
-            return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Column(
-                  children: [
-                    AppBar(
-                      automaticallyImplyLeading: false,
-                      title: const Text("Steps"),
-                      backgroundColor: Colors.transparent,
-                      elevation: 0,
-                      foregroundColor: Colors.black,
-                      centerTitle: false,
-                      actions: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.close,
+            return Container(
+              color: Colors.transparent,
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Column(
+                children: [
+                  AppBar(
+                    automaticallyImplyLeading: false,
+                    title: const Text("Steps"),
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    foregroundColor: Colors.black,
+                    centerTitle: false,
+                    actions: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      )
+                    ],
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: steps.length,
+                      itemBuilder: (context, index) {
+                        OSMStep step = steps[index];
+                        return ListTile(
+                          onTap: onClick == null
+                              ? null
+                              : () {
+                                  Navigator.pop(context);
+                                  onClick(step);
+                                },
+                          leading: Text(
+                            "${index + 1}.",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          onPressed: () => Navigator.pop(context),
-                        )
-                      ],
+                          title: Text(
+                            step.pathName.toCapitalized(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "${step.type.toCapitalized()} ${step.mofifier}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          trailing: Text("${step.distance}m"),
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                        );
+                      },
                     ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: steps.length,
-                        itemBuilder: (context, index) {
-                          OSMStep step = steps[index];
-                          return ListTile(
-                            onTap: onClick == null
-                                ? null
-                                : () {
-                                    Navigator.pop(context);
-                                    onClick(step);
-                                  },
-                            leading: Text(
-                              "${index + 1}.",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            title: Text(
-                              step.pathName.toCapitalized(),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              "${step.type.toCapitalized()} ${step.mofifier}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            trailing: Text("${step.distance}m"),
-                            dense: true,
-                            visualDensity: VisualDensity.compact,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           },

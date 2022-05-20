@@ -11,6 +11,7 @@ import 'package:osm_offline_download/services/location_listen_service.dart';
 import 'package:osm_offline_download/providers/map_layers_provider.dart';
 import 'package:osm_offline_download/navigation_screen/osm_direction_steps_screen.dart';
 import 'package:osm_offline_download/location_points/ripple_point.dart';
+import 'package:osm_offline_download/utils/osm_controller_implementation.dart';
 import 'services/download_map_service.dart';
 
 // OSM Marker class
@@ -32,21 +33,26 @@ class OSMMarker {
 ----------------------------------------------------------------------------------------
 OSM controller this provides  access to dynamically add polygons, polylines, 
 get positions, get zoom, change listen to user locations
-
 ----------------------------------------------------------------------------------------
 */
 abstract class OSMMapOfflineController {
   factory OSMMapOfflineController() {
     return OSMMapOfflineControllerImplementation();
   }
+  // it connects controller to parent state
   void setParent(dynamic);
+
+  // animate map to latitude and longitude with certain zoom
   void moveToPosition(LatLng latLng, {double? zoom});
+  // add poly line to the map
   void addPolylines({
     required List<LatLng> points,
     Color? color,
     double? strokeWidth,
   });
+  // remove polyline with index if exist
   void removePolyline(int index);
+  // add polygon to map
   void addPolygons({
     required List<LatLng> points,
     Color? color,
@@ -55,206 +61,26 @@ abstract class OSMMapOfflineController {
     bool isDotted = false,
     bool disableHolesBorder = false,
   });
+  // remove polygon with index if exist
   void removePolygons(int index);
+  // get center position of the map
   LatLng getCenterPosition();
+  // get zoom level of map
   double getZoom();
+  // get coundary on the map on view port
   LatLngBounds getBoundary();
+  // move to certain point in map with animation
   void animateToPoint(LatLng latLng, {double? zoom});
+  // enable tracking on map using location api
   void setTracking(bool enable);
+  // add markers to map
   void addMarkers({List<OSMMarker> markers = const []});
-
-  void fetchDirection(BuildContext context,
-      {required LatLng startingpoint, required LatLng endpoint});
-}
-
-/* 
---------------------------------------------------------------------------------------------
-Implementing OSMMapOfflineController 
---------------------------------------------------------------------------------------------
-*/
-class OSMMapOfflineControllerImplementation implements OSMMapOfflineController {
-  late _OSMMapBoxState _osmMapBoxState = _OSMMapBoxState();
-
-  @override
-  void setParent(osmMapBoxState) {
-    _osmMapBoxState = osmMapBoxState;
-  }
-
-  @override
-  void moveToPosition(LatLng latLng, {double? zoom}) {
-    _osmMapBoxState._animateMove(latLng, zoom: zoom);
-  }
-
-  @override
-  void addPolylines({
-    required List<LatLng> points,
-    Color? color,
-    double? strokeWidth,
-  }) {
-    dev.log("hello");
-    _osmMapBoxState.polylines.add(Polyline(
-      points: points,
-      color: color ?? Colors.red,
-      strokeWidth: strokeWidth ?? 3,
-    ));
-    dev.log(points.length.toString());
-
-    _osmMapBoxState
-        .setState(() => _osmMapBoxState.polylines = _osmMapBoxState.polylines);
-  }
-
-  @override
-  void removePolyline(int index) {
-    if (_osmMapBoxState.polylines.length > index) {
-      _osmMapBoxState.polylines.removeAt(index);
-    }
-    _osmMapBoxState
-        .setState(() => _osmMapBoxState.polylines = _osmMapBoxState.polylines);
-  }
-
-  @override
-  void addPolygons({
-    required List<LatLng> points,
-    Color? color,
-    Color borderColor = const Color(0xFFFFFF00),
-    double borderStrokeWidth = 0.0,
-    bool isDotted = false,
-    bool disableHolesBorder = false,
-  }) {
-    dev.log("Hellorrrr ");
-    dev.log(points.length.toString());
-    _osmMapBoxState.polygons.add(Polygon(
-      points: points,
-      color: color ?? Colors.red,
-      borderColor: borderColor,
-      borderStrokeWidth: borderStrokeWidth,
-      disableHolesBorder: disableHolesBorder,
-      isDotted: isDotted,
-    ));
-    _osmMapBoxState
-        .setState(() => _osmMapBoxState.polylines = _osmMapBoxState.polylines);
-  }
-
-  @override
-  void removePolygons(int index) {
-    _osmMapBoxState.polylines.removeAt(index);
-    _osmMapBoxState
-        .setState(() => _osmMapBoxState.polylines = _osmMapBoxState.polylines);
-  }
-
-  @override
-  LatLng getCenterPosition() {
-    double lat = _osmMapBoxState._controller.center.latitude;
-    double lng = _osmMapBoxState._controller.center.longitude;
-    return LatLng(lat, lng);
-  }
-
-  @override
-  double getZoom() {
-    return _osmMapBoxState._controller.zoom;
-  }
-
-  @override
-  LatLngBounds getBoundary() {
-    LatLngBounds latLngBounds = _osmMapBoxState._controller.bounds!;
-    return latLngBounds;
-  }
-
-  @override
-  void animateToPoint(LatLng latLng, {double? zoom}) {
-    _osmMapBoxState._animateMove(latLng, zoom: zoom);
-  }
-
-  @override
-  void setTracking(bool enable) {
-    _osmMapBoxState.setState(() {
-      _osmMapBoxState.locationTrack = enable;
-      _osmMapBoxState.enableLocation = enable;
-    });
-    if (!enable) {
-      _osmMapBoxState.locationNotifier!.stopListening();
-    } else {
-      _osmMapBoxState._listenToLocationChange();
-    }
-  }
-
-  @override
-  void addMarkers({List<OSMMarker> markers = const []}) {
-    List<Marker> markersList = [];
-    for (var marker in markers) {
-      markersList.add(
-        Marker(
-          point: marker.latlng,
-          rotate: marker.rotate,
-          width: marker.width,
-          height: marker.height,
-          builder: (ctx) =>
-              marker.child ??
-              const RipplePoint(
-                repeat: false,
-                duration: Duration(seconds: 3),
-              ),
-        ),
-      );
-    }
-    _osmMapBoxState.setState(() {
-      _osmMapBoxState.customMarkers = markersList;
-    });
-  }
-
-  @override
-  void fetchDirection(BuildContext context,
-      {required LatLng startingpoint, required LatLng endpoint}) async {
-    DirectionService directionService = DirectionService();
-    await directionService.getDirections(startingpoint, endpoint);
-    List<LatLng> points = directionService.directionpoints;
-    dev.log(points.length.toString());
-    List<Polyline> polylines = [];
-    polylines.add(Polyline(
-      points: points,
-      color: Colors.red,
-      strokeWidth: 10,
-    ));
-    dev.log(points.length.toString());
-    var markers = [
-      OSMMarker(
-        points.first,
-        rotate: true,
-        height: 20,
-        width: 20,
-        child: const PinPoint(color: Colors.red),
-      ),
-      OSMMarker(
-        points.last,
-        rotate: true,
-        height: 20,
-        width: 20,
-        child: const PinPoint(color: Colors.teal),
-      ),
-    ];
-    List<Marker> markersList = [];
-    for (var marker in markers) {
-      markersList.add(
-        Marker(
-          point: marker.latlng,
-          rotate: marker.rotate,
-          width: marker.width,
-          height: marker.height,
-          builder: (ctx) =>
-              marker.child ??
-              const RipplePoint(
-                repeat: false,
-                duration: Duration(seconds: 3),
-              ),
-        ),
-      );
-    }
-    _osmMapBoxState._gotoNavigation(
-      polylines: polylines,
-      markers: markersList,
-      steps: directionService.steps,
-    );
-  }
+  // go to navigation with given start location adn end location
+  void fetchDirection(
+    BuildContext context, {
+    required LatLng startingpoint,
+    required LatLng endpoint,
+  });
 }
 
 class OSMMapBox extends StatefulWidget {
@@ -277,7 +103,7 @@ class OSMMapBox extends StatefulWidget {
     this.onUserLocationChange,
   }) : super(key: key);
   @override
-  State<OSMMapBox> createState() => _OSMMapBoxState();
+  State<OSMMapBox> createState() => OSMMapBoxState();
   static Future<void> downloadOffline({
     required LatLng eastNorthLatLng,
     required LatLng southWestLatLng,
@@ -291,9 +117,9 @@ class OSMMapBox extends StatefulWidget {
   }
 }
 
-class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
+class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
   String imagePath = "";
-  final MapController _controller = MapController();
+  final MapController controller = MapController();
   late final OSMMapOfflineController osmMapOfflineController;
   List<Polyline> polylines = [];
   List<Polygon> polygons = [];
@@ -308,7 +134,7 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     enableLocation = widget.enableLocation!;
     polylines = widget.polylines ?? [];
     customMarkers = widget.markers ?? [];
-    _listenToLocationChange();
+    listenToLocationChange();
     super.initState();
     getImagePath();
     osmMapOfflineController = widget.controller;
@@ -340,14 +166,14 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
                     ],
             ),
           ],
-          mapController: _controller,
+          mapController: controller,
         ),
         Positioned(
           top: 0,
           right: 0,
           child: SafeArea(
             child: IconButton(
-              onPressed: () => _animateRotate(0),
+              onPressed: () => animateRotate(0),
               color: Colors.white,
               iconSize: 30,
               icon: Container(
@@ -375,7 +201,7 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     }
   }
 
-  _listenToLocationChange() async {
+  listenToLocationChange() async {
     if (!enableLocation) {
       if (locationNotifier == null) return;
       locationNotifier = null;
@@ -407,7 +233,7 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
         child: const RipplePoint(repeat: true),
       ),
     );
-    if (locationTrack) _animateMove(latlng, zoom: _controller.zoom);
+    if (locationTrack) animateMove(latlng, zoom: controller.zoom);
     setState(() => currentLocationMarker = currentLocationMarker);
     if (widget.onUserLocationChange == null) return;
     widget.onUserLocationChange!(latlng);
@@ -420,22 +246,22 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     });
   }
 
-  _animateMove(LatLng latLng, {double? zoom}) {
+  animateMove(LatLng latLng, {double? zoom}) {
     AnimationController animationController = AnimationController(
         duration: const Duration(milliseconds: 1500), vsync: this);
-    LatLng curretnLatLng = _controller.center;
+    LatLng curretnLatLng = controller.center;
     final latTween =
         Tween<double>(begin: curretnLatLng.latitude, end: latLng.latitude);
     final lngTween =
         Tween<double>(begin: curretnLatLng.longitude, end: latLng.longitude);
     final zoomTween =
-        Tween<double>(begin: _controller.zoom, end: zoom ?? _controller.zoom);
+        Tween<double>(begin: controller.zoom, end: zoom ?? controller.zoom);
     Animation<double> animation = CurvedAnimation(
       parent: animationController,
       curve: Curves.fastOutSlowIn,
     );
     animationController.addListener(() {
-      _controller.move(
+      controller.move(
         LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
         zoomTween.evaluate(animation),
       );
@@ -452,8 +278,8 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     animationController.forward();
   }
 
-  _animateRotate(double degree) {
-    double ang = _controller.rotation;
+  animateRotate(double degree) {
+    double ang = controller.rotation;
     double start = max(ang, degree);
     double end = min(ang, degree);
     if (start == 0) {
@@ -477,7 +303,7 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
       curve: Curves.ease,
     );
     animationController.addListener(() {
-      _controller.rotate(
+      controller.rotate(
         rotationTween.evaluate(animation),
       );
     });
@@ -492,7 +318,7 @@ class _OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     animationController.forward();
   }
 
-  _gotoNavigation({
+  gotoNavigation({
     required List<Polyline> polylines,
     required List<OSMStep> steps,
     required List<Marker> markers,

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
@@ -62,7 +64,13 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("NAVIGATION")),
+      appBar: AppBar(
+        title: const Text("NAVIGATION"),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ),
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -74,17 +82,21 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
             ),
             zoom: 15,
             polylines: widget.polylines,
-            locationTrack: true,
-            enableLocation: true,
+            locationTrack: false,
+            enableLocation: false,
             markers: widget.markers,
           ),
-          Builder(builder: (context) {
-            if (bottomInformationMarker == null) {
-              return const SizedBox();
-            } else {
-              return bottomInformationMarker!;
-            }
-          })
+          Positioned(
+            bottom: 15,
+            width: min(MediaQuery.of(context).size.width, 500),
+            child: Builder(builder: (context) {
+              if (bottomInformationMarker == null) {
+                return const SizedBox();
+              } else {
+                return bottomInformationMarker!;
+              }
+            }),
+          )
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -97,27 +109,11 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
           );
         },
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
   void addPathInformation(BuildContext context, {required OSMStep step}) {
-    List<OSMMarker> markers = [
-      OSMMarker(
-        widget.markers.first.point,
-        rotate: true,
-        height: 20,
-        width: 20,
-        child: const PinPoint(color: Colors.red),
-      ),
-      OSMMarker(
-        widget.markers.last.point,
-        rotate: true,
-        height: 20,
-        width: 20,
-        child: const PinPoint(color: Colors.teal),
-      ),
-    ];
-    // osmMapOfflineController.addMarkers(markers: markers);
     osmMapOfflineController.removePolyline(1);
     osmMapOfflineController.addPolylines(
       points: step.points,
@@ -126,11 +122,13 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
     );
     bottomInformationMarker = Container(
       margin: const EdgeInsets.symmetric(horizontal: 20).copyWith(bottom: 40),
-      height: 100,
+      // height: 60,
+      padding: const EdgeInsets.all(10),
       constraints: const BoxConstraints(maxWidth: 500),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black45, width: 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -155,7 +153,7 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
                   //           "Distance: ${step.distance.toStringAsFixed(2)} meters",
                   //         ),
                   //       ],
-                  //     ),
+                  //     ), d
                   //     actions: [
                   //       CupertinoDialogAction(
                   //         child: const Text("Ok"),
@@ -173,15 +171,15 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
           const SizedBox(width: 10),
           Expanded(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   step.pathName.toCapitalized(),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -191,7 +189,7 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontWeight: FontWeight.w500,
-                    fontSize: 10,
+                    fontSize: 13,
                   ),
                 ),
               ],
@@ -217,109 +215,7 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
     );
 
     setState(() => bottomInformationMarker = bottomInformationMarker);
-    // showAboutDialog(
-    //   context: context,
-    //   children: [
-    //   ],
-    // );
-    // osmMapOfflineController.addMarkers(
-    //   markers: [
-    //     ...markers,
-    //     OSMMarker(
-    //       LatLng(step.lat, step.lng),
-    //       rotate: true,
-    //       width: 250,
-    //       height: 100,
-    //       child: Container(
-    //         margin: const EdgeInsets.only(bottom: 40),
-    //         decoration: BoxDecoration(
-    //           color: Colors.white.withOpacity(0.9),
-    //           borderRadius: BorderRadius.circular(10),
-    //         ),
-    //         child: Row(
-    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //           children: [
-    //             ClipRRect(
-    //               borderRadius: BorderRadius.circular(40),
-    //               child: Material(
-    //                 child: IconButton(
-    //                   padding: const EdgeInsets.all(3),
-    //                   iconSize: 20,
-    //                   onPressed: () {
-    //                     showCupertinoDialog(
-    //                       context: context,
-    //                       builder: (ctx) => CupertinoAlertDialog(
-    //                         title: Text(step.pathName),
-    //                         content: Column(
-    //                           children: [
-    //                             Text(
-    //                               "${step.type.toCapitalized()} ${step.mofifier}",
-    //                             ),
-    //                             Text(
-    //                               "Distance: ${step.distance.toStringAsFixed(2)} meters",
-    //                             ),
-    //                           ],
-    //                         ),
-    //                         actions: [
-    //                           CupertinoDialogAction(
-    //                             child: const Text("Ok"),
-    //                             onPressed: () => Navigator.pop(context),
-    //                           ),
-    //                         ],
-    //                       ),
-    //                     );
-    //                   },
-    //                   icon: const Icon(CupertinoIcons.share),
-    //                 ),
-    //               ),
-    //             ),
-    //             const SizedBox(width: 10),
-    //             Expanded(
-    //               child: Column(
-    //                 mainAxisAlignment: MainAxisAlignment.center,
-    //                 crossAxisAlignment: CrossAxisAlignment.start,
-    //                 children: [
-    //                   Text(
-    //                     step.pathName.toCapitalized(),
-    //                     maxLines: 2,
-    //                     overflow: TextOverflow.ellipsis,
-    //                     style: const TextStyle(
-    //                       fontSize: 13,
-    //                       fontWeight: FontWeight.bold,
-    //                     ),
-    //                   ),
-    //                   Text(
-    //                     "${step.type.toCapitalized()} ${step.mofifier.toCapitalized()}",
-    //                     maxLines: 2,
-    //                     overflow: TextOverflow.ellipsis,
-    //                     style: const TextStyle(
-    //                       fontWeight: FontWeight.w500,
-    //                       fontSize: 10,
-    //                     ),
-    //                   ),
-    //                 ],
-    //               ),
-    //             ),
-    //             const SizedBox(width: 10),
-    //             ClipRRect(
-    //               borderRadius: BorderRadius.circular(40),
-    //               child: Material(
-    //                 child: IconButton(
-    //                   padding: const EdgeInsets.all(3),
-    //                   iconSize: 20,
-    //                   onPressed: () => osmMapOfflineController.addMarkers(
-    //                     markers: markers,
-    //                   ),
-    //                   icon: const Icon(Icons.close),
-    //                 ),
-    //               ),
-    //             ),
-    //           ],
-    //         ),
-    //       ),
-    //     ),
-    //   ],
-    // );
+
     osmMapOfflineController.animateToPoint(
       LatLng(step.lat, step.lng),
     );
