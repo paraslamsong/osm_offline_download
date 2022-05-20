@@ -5,7 +5,7 @@ A Flutter package to enable osm tile to download along with other features like 
 
 ## Getting Started
 
-Install the package with flutter pub
+Install the package with [[flutter pub add osm_offline_download]]
 
 ## Some dependency plackages used in this package
 1. flutter_map
