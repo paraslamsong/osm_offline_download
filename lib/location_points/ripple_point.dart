@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:osm_offline_download/ripple_animation.dart';
+import 'package:osm_offline_download/location_points/ripple_animation.dart';
 
 class RipplePoint extends StatelessWidget {
   final bool? repeat;

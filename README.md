@@ -25,7 +25,7 @@ Install the package with [[flutter pub add osm_offline_download]]
 3. Caching OSM Tiles
 4. Animations to map operations
 5. Adding polygons, polylines, markers
-6. OSM direction api integration
+6. OSM direction api integration(Uses OSMR direction api)
 7. User location tracking
 
 

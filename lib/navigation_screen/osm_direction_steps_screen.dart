@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:osm_offline_download/fetch_direction_service.dart';
+import 'package:osm_offline_download/utils/capitalize_string.dart';
+import 'package:osm_offline_download/services/fetch_direction_service.dart';
 import 'package:osm_offline_download/osm_map_box.dart';
-import 'package:osm_offline_download/ripple_point.dart';
-import 'package:osm_offline_download/show_route_bottom_sheet.dart';
+import 'package:osm_offline_download/location_points/ripple_point.dart';
+import 'package:osm_offline_download/navigation_screen/show_route_bottom_sheet.dart';
 
 showOSMDirectionStepScreen(
   BuildContext context, {
@@ -94,7 +95,6 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
                   child: const PinPoint(color: Colors.teal),
                 ),
               ];
-
               osmMapOfflineController.addMarkers(markers: markers);
               osmMapOfflineController.addMarkers(
                 markers: [
@@ -102,7 +102,7 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
                   OSMMarker(
                     LatLng(step.lat, step.lng),
                     rotate: true,
-                    width: 160,
+                    width: 180,
                     height: 100,
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 40),
@@ -115,13 +115,29 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
                         children: [
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              step.pathName,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  step.pathName.toCapitalized(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  "${step.type.toCapitalized()} ${step.mofifier.toCapitalized()}",
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(width: 10),

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:osm_offline_download/map_tile_providers.dart';
+import 'package:osm_offline_download/providers/map_tile_providers.dart';
 
 TileLayerOptions tileProvider(BuildContext context, String appDirectory) =>
     TileLayerOptions(

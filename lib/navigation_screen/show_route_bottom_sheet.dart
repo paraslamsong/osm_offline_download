@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:osm_offline_download/fetch_direction_service.dart';
+import 'package:osm_offline_download/utils/capitalize_string.dart';
+import 'package:osm_offline_download/services/fetch_direction_service.dart';
 
 showRouteSteps(
   BuildContext context, {
@@ -41,25 +42,35 @@ showRouteSteps(
                         itemBuilder: (context, index) {
                           OSMStep step = steps[index];
                           return ListTile(
-                              onTap: onClick == null
-                                  ? null
-                                  : () {
-                                      Navigator.pop(context);
-                                      onClick(step);
-                                    },
-                              title: Text(
-                                step.pathName.toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            onTap: onClick == null
+                                ? null
+                                : () {
+                                    Navigator.pop(context);
+                                    onClick(step);
+                                  },
+                            leading: Text(
+                              "${index + 1}.",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
-                              subtitle: Text(
-                                "${step.type} ${step.mofifier}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            ),
+                            title: Text(
+                              step.pathName.toCapitalized(),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              trailing: Text("${step.distance}M"));
+                            ),
+                            subtitle: Text(
+                              "${step.type.toCapitalized()} ${step.mofifier}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            trailing: Text("${step.distance}m"),
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
+                          );
                         },
                       ),
                     ),

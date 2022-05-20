@@ -92,24 +92,24 @@ class _MapScreenState extends State<MapScreen> {
                 //   zoom: 13,
                 // );
 
-                OSMMapBox.downloadOffline(
-                  eastNorthLatLng: LatLng(27.7469, 85.359),
-                  southWestLatLng: LatLng(27.6574, 85.2775),
-                  onProgress: (double p) {
-                    setState(() => progress = p);
-                  },
-                );
+                // OSMMapBox.downloadOffline(
+                //   eastNorthLatLng: LatLng(27.7469, 85.359),
+                //   southWestLatLng: LatLng(27.6574, 85.2775),
+                //   onProgress: (double p) {
+                //     setState(() => progress = p);
+                //   },
+                // );
               },
               child: const Icon(Icons.download),
             );
           } else {
             return Container(
               color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("${(progress * 100).toStringAsFixed(2)} %"),
+                  Text("Downloading: ${(progress * 100).toStringAsFixed(2)} %"),
                   LinearProgressIndicator(value: progress),
                 ],
               ),

@@ -6,12 +6,12 @@ import 'package:flutter_map/flutter_map.dart';
 
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
-import 'package:osm_offline_download/fetch_direction_service.dart';
-import 'package:osm_offline_download/location_listen_service.dart';
-import 'package:osm_offline_download/map_layers_provider.dart';
-import 'package:osm_offline_download/osm_direction_steps_screen.dart';
-import 'package:osm_offline_download/ripple_point.dart';
-import 'download_map_service.dart';
+import 'package:osm_offline_download/services/fetch_direction_service.dart';
+import 'package:osm_offline_download/services/location_listen_service.dart';
+import 'package:osm_offline_download/providers/map_layers_provider.dart';
+import 'package:osm_offline_download/navigation_screen/osm_direction_steps_screen.dart';
+import 'package:osm_offline_download/location_points/ripple_point.dart';
+import 'services/download_map_service.dart';
 
 // OSM Marker class
 class OSMMarker {
