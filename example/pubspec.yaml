@@ -32,6 +32,7 @@ dependencies:
   latlong2: ^0.8.1
   dio: ^4.0.6
   speed_dial_fab: ^2.2.1
+  flutter_background_service: ^2.1.0
 
 dev_dependencies:
   flutter_test:

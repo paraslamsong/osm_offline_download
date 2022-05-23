@@ -114,11 +114,16 @@ class OSMMapBox extends StatefulWidget {
     required LatLng southWestLatLng,
     Function(double)? onProgress,
   }) async {
-    downloadMap(
+    downloadService(
       eastNorthLatLng: eastNorthLatLng,
       southWestLatLng: southWestLatLng,
       onProgress: onProgress,
     );
+    // downloadMap(
+    //   eastNorthLatLng: eastNorthLatLng,
+    //   southWestLatLng: southWestLatLng,
+    //   onProgress: onProgress,
+    // );
   }
 
   static Future<GeoCode> getGeoCoding({required String query}) {
@@ -143,6 +148,8 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
   bool locationTrack = false;
   bool enableLocation = false;
 
+  double mapRotation = 0;
+
   @override
   void initState() {
     locationTrack = widget.locationTrack!;
@@ -150,9 +157,17 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     polylines = widget.polylines ?? [];
     customMarkers = widget.markers ?? [];
     listenToLocationChange();
+
     super.initState();
+
     getImagePath();
     osmMapOfflineController = widget.controller;
+
+    controller.mapEventStream.listen((event) {
+      if (controller.rotation != mapRotation) {
+        setState(() => mapRotation = controller.rotation);
+      }
+    });
   }
 
   String appDirectory = "";
@@ -190,16 +205,36 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
             child: IconButton(
               onPressed: () => animateRotate(0),
               color: Colors.white,
-              iconSize: 30,
+              iconSize: 40,
               icon: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(100),
                     color: Theme.of(context).primaryColor,
                   ),
-                  child: const Icon(
-                    CupertinoIcons.location_north_fill,
-                    size: 15,
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: AnimatedRotation(
+                      duration: const Duration(milliseconds: 0),
+                      turns: mapRotation / 360,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Text(
+                            "N",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          Icon(
+                            CupertinoIcons.location_north_line_fill,
+                            size: 15,
+                          ),
+                        ],
+                      ),
+                    ),
                   )),
             ),
           ),

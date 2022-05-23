@@ -8,6 +8,7 @@ import 'package:osm_offline_download/utils/capitalize_string.dart';
 import 'package:osm_offline_download/services/fetch_direction_service.dart';
 import 'package:osm_offline_download/osm_map_box.dart';
 import 'package:osm_offline_download/navigation_screen/show_route_bottom_sheet.dart';
+import 'package:osm_offline_download/utils/unit_convertor.dart';
 
 showOSMDirectionStepScreen(
   BuildContext context, {
@@ -121,8 +122,6 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
         ],
       ),
       floatingActionButton: AnimatedScale(
-        // visible: !showBottomInformation,
-        // maintainState: true,
         scale: !showBottomInformation ? 1 : 0,
         duration: const Duration(milliseconds: 300),
         child: FloatingActionButton(
@@ -178,29 +177,28 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
                 padding: const EdgeInsets.all(3),
                 iconSize: 20,
                 onPressed: () {
-                  // showCupertinoDialog(
-                  //   context: context,
-                  //   builder: (ctx) => CupertinoAlertDialog(
-                  //     title: Text(step.pathName),
-                  //     content: Column(
-                  //       children: [
-                  //         Text(
-                  //           "${step.type.toCapitalized()} ${step.mofifier}",
-                  //         ),
-                  //         Text(
-                  //           "Distance: ${step.distance.toStringAsFixed(2)} meters",
-                  //         ),
-                  //       ],
-                  //     ), d
-                  //     actions: [
-                  //       CupertinoDialogAction(
-                  //         child: const Text("Ok"),
-                  //         onPressed: () =>
-                  //             setState(() => bottomInformationMarker = null),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // );
+                  showCupertinoDialog(
+                    context: context,
+                    builder: (ctx) => CupertinoAlertDialog(
+                      title: Text(step.pathName),
+                      content: Column(
+                        children: [
+                          Text(
+                            "${step.type.toCapitalized()} ${step.mofifier}",
+                          ),
+                          Text(
+                            "Length: ${step.distance.inDistance()}",
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        CupertinoDialogAction(
+                          child: const Text("Ok"),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  );
                 },
                 icon: const Icon(CupertinoIcons.share),
               ),

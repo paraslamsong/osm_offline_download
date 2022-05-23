@@ -58,6 +58,7 @@ class _MapScreenState extends State<MapScreen> {
               eastNorthLatLng: LatLng(27.7469, 85.359),
               southWestLatLng: LatLng(27.6574, 85.2775),
               onProgress: (double p) {
+                debugPrint(p.toString());
                 setState(() => progress = p);
               },
             );
@@ -72,11 +73,9 @@ class _MapScreenState extends State<MapScreen> {
           () {
             controller.addPolylines(
               points: [
-                LatLng(27.72, 85.459),
-                LatLng(27.72, 85.574),
-                LatLng(27.8469, 85.574),
-                LatLng(27.8469, 85.459),
-                LatLng(27.72, 85.459),
+                LatLng(27.6630452, 85.3270626),
+                LatLng(27.6699628, 85.3282213),
+                LatLng(27.6733074, 85.3361607),
               ],
               strokeWidth: 3,
               color: Colors.blue,

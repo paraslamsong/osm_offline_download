@@ -16,6 +16,7 @@ dependencies:
   location: ^4.4.0
   latlong2: ^0.8.1
   dio: ^4.0.6
+  flutter_background_service: ^2.1.0
 
 dev_dependencies:
   flutter_test:
