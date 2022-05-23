@@ -385,6 +385,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.2"
+  speed_dial_fab:
+    dependency: "direct main"
+    description:
+      name: speed_dial_fab
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.2.1"
   sqflite:
     dependency: transitive
     description:

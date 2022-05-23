@@ -1,6 +1,11 @@
+import 'dart:developer';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:osm_offline_download/osm_map_box.dart';
+import 'package:osm_offline_download/services/geocoding_service.dart';
+import 'package:speed_dial_fab/speed_dial_fab.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -24,86 +29,104 @@ class _MapScreenState extends State<MapScreen> {
         locationTrack: false,
         enableLocation: false,
       ),
-      floatingActionButton: StatefulBuilder(
+      floatingActionButton: SpeedDialFabWidget(
+        primaryForegroundColor: Colors.white,
+        primaryBackgroundColor: Theme.of(context).primaryColor,
+        secondaryIconsList: const [
+          Icons.download,
+          Icons.directions,
+          Icons.line_axis_rounded,
+          Icons.location_on,
+          Icons.track_changes,
+          CupertinoIcons.location_north_fill,
+          Icons.location_searching,
+          Icons.square,
+        ],
+        secondaryIconsText: const [
+          "Download Tiles",
+          "Navigation",
+          "Draw Lines",
+          "Geo Location",
+          "Enable/Diable Tracking",
+          "Add Marker",
+          "Animate to point",
+          "Add Polygon"
+        ],
+        secondaryIconsOnPress: [
+          () {
+            OSMMapBox.downloadOffline(
+              eastNorthLatLng: LatLng(27.7469, 85.359),
+              southWestLatLng: LatLng(27.6574, 85.2775),
+              onProgress: (double p) {
+                setState(() => progress = p);
+              },
+            );
+          },
+          () {
+            controller.getDirection(
+              context,
+              startpoint: LatLng(27.6822, 85.3176),
+              endpoint: LatLng(27.7013, 85.3400),
+            );
+          },
+          () {
+            controller.addPolylines(
+              points: [
+                LatLng(27.72, 85.459),
+                LatLng(27.72, 85.574),
+                LatLng(27.8469, 85.574),
+                LatLng(27.8469, 85.459),
+                LatLng(27.72, 85.459),
+              ],
+              strokeWidth: 3,
+              color: Colors.blue,
+            );
+          },
+          () async {
+            String query = "kathmandu";
+            GeoCode geoCode = await OSMMapBox.getGeoCoding(query: query);
+            log("GeoCoding (Searched: $query ) : (Result: ${geoCode.center.latitude}, ${geoCode.center.longitude} )");
+            LatLng coord = LatLng(27.7469, 85.359);
+            ReverseGeoCode reverseGeoCode =
+                await OSMMapBox.getReverseGeoCoding(coord: coord);
+            log("Reverse GeoCoding (Searched:  ${coord.latitude}, ${coord.longitude} ) : (Result: ${reverseGeoCode.displayName})");
+          },
+          () {
+            tracking = !tracking;
+            controller.setTracking(tracking);
+          },
+          () {
+            controller.addMarkers(
+              markers: [
+                OSMMarker(LatLng(27.7469, 85.359)),
+              ],
+            );
+          },
+          () {
+            controller.animateToPoint(
+              LatLng(27.7469, 85.359),
+              zoom: 13,
+            );
+          },
+          () {
+            controller.addPolygons(
+              points: [
+                LatLng(27.65, 85.27),
+                LatLng(27.65, 85.37),
+                LatLng(27.75, 85.37),
+                LatLng(27.75, 85.27),
+              ],
+              color: Colors.red.withOpacity(0.3),
+              borderColor: Colors.red,
+              borderStrokeWidth: 2,
+            );
+          }
+        ],
+      ),
+      bottomNavigationBar: StatefulBuilder(
         builder: (context, setState) => Builder(builder: (context) {
           if (progress == 0.0 || progress == 1.0) {
-            return FloatingActionButton(
-              onPressed: () {
-                controller.fetchDirection(
-                  context,
-                  startingpoint: LatLng(27.6822, 85.3176),
-                  endpoint: LatLng(27.7013, 85.3400),
-                  routeColor: Colors.blue.withOpacity(0.6),
-                  highlightColor: Colors.purpleAccent.withOpacity(0.6),
-                );
-
-                // tracking = !tracking;
-                // controller.setTracking(tracking);
-                // controller.addPolylines(
-                //   points: [
-                //     LatLng(27.7469, 85.359),
-                //     LatLng(27.7469, 85.360),
-                //     LatLng(27.7469, 85.361),
-                //     LatLng(27.7469, 85.362),
-                //     LatLng(27.7469, 85.363),
-                //     LatLng(27.7449, 85.374),
-                //     LatLng(27.7429, 85.355),
-                //     LatLng(27.7469, 85.366),
-                //     LatLng(27.7469, 85.367),
-                //     LatLng(27.7469, 85.368),
-                //     LatLng(27.7469, 85.369),
-                //     LatLng(27.7469, 85.370),
-                //     LatLng(27.7469, 85.371),
-                //     LatLng(27.7469, 85.372),
-                //     LatLng(27.7469, 85.373),
-                //     LatLng(27.7469, 85.374),
-                //   ],
-                //   strokeWidth: 2,
-                // );
-
-                // controller.addPolylines(
-                //   points: [
-                //     LatLng(27.72, 85.459),
-                //     LatLng(27.72, 85.574),
-                //     LatLng(27.8469, 85.574),
-                //     LatLng(27.8469, 85.459),
-                //     LatLng(27.72, 85.459),
-                //   ],
-                //   strokeWidth: 3,
-                //   color: Colors.blue,
-                // );
-                // controller.addMarkers(
-                //   markers: [
-                //     OSMMarker(LatLng(27.7469, 85.359)),
-                //     OSMMarker(LatLng(27.7379, 85.369),
-                //         child: const FlutterLogo()),
-                //   ],
-                // );
-
-                // controller.addPolygons(
-                //   points: [
-                //     LatLng(27.65, 85.27),
-                //     LatLng(27.65, 85.37),
-                //     LatLng(27.75, 85.37),
-                //     LatLng(27.75, 85.27),
-                //   ],
-                //   color: Colors.red.withOpacity(0.3),
-                // );
-                // controller.animateToPoint(
-                //   LatLng(27.7469, 85.359),
-                //   zoom: 13,
-                // );
-
-                // OSMMapBox.downloadOffline(
-                //   eastNorthLatLng: LatLng(27.7469, 85.359),
-                //   southWestLatLng: LatLng(27.6574, 85.2775),
-                //   onProgress: (double p) {
-                //     setState(() => progress = p);
-                //   },
-                // );
-              },
-              child: const Icon(Icons.download),
-            );
+            return const SizedBox();
           } else {
             return Container(
               color: Colors.white,
@@ -119,7 +142,7 @@ class _MapScreenState extends State<MapScreen> {
           }
         }),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 }
