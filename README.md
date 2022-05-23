@@ -3,10 +3,12 @@
 A Flutter package to enable osm tile to download along with other features like direction api inclusion and many more
 
 ## Screen shot
+<div>
 <img src="map_ss.png" height="400"/>
 <img src="navigation1_ss.png" height="400"/>
 <img src="navigation2_ss.png" height="400"/>
 <img src="navigation3_ss.png" height="400"/>
+</div>
 
 
 # Getting Started
