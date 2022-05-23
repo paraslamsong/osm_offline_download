@@ -80,6 +80,8 @@ abstract class OSMMapOfflineController {
     BuildContext context, {
     required LatLng startingpoint,
     required LatLng endpoint,
+    Color? highlightColor,
+    Color? routeColor,
   });
 }
 
@@ -322,6 +324,8 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
     required List<Polyline> polylines,
     required List<OSMStep> steps,
     required List<Marker> markers,
+    Color? highlightColor,
+    Color? routeColor,
   }) {
     showOSMDirectionStepScreen(
       context,
@@ -329,6 +333,8 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
       polylines: polylines,
       steps: steps,
       markers: markers,
+      highlightColor: highlightColor,
+      routeColor: routeColor,
     );
   }
 }

@@ -7,7 +7,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:osm_offline_download/utils/capitalize_string.dart';
 import 'package:osm_offline_download/services/fetch_direction_service.dart';
 import 'package:osm_offline_download/osm_map_box.dart';
-import 'package:osm_offline_download/location_points/ripple_point.dart';
 import 'package:osm_offline_download/navigation_screen/show_route_bottom_sheet.dart';
 
 showOSMDirectionStepScreen(
@@ -16,7 +15,11 @@ showOSMDirectionStepScreen(
   required List<Polyline> polylines,
   required List<OSMStep> steps,
   required List<Marker> markers,
+  Color? routeColor,
+  Color? highlightColor,
 }) {
+  routeColor = routeColor ?? Colors.red.withOpacity(0.7);
+  highlightColor = highlightColor ?? Colors.yellow.withOpacity(0.7);
   showGeneralDialog(
     context: context,
     pageBuilder: (_, __, ___) {
@@ -25,6 +28,8 @@ showOSMDirectionStepScreen(
         polylines: polylines,
         steps: steps,
         markers: markers,
+        routeColor: routeColor!,
+        highlightColor: highlightColor!,
       );
     },
   );
@@ -35,6 +40,7 @@ class OSMDirectionStepsScreen extends StatefulWidget {
   final List<Polyline> polylines;
   final List<OSMStep> steps;
   final List<Marker> markers;
+  final Color routeColor, highlightColor;
 
   const OSMDirectionStepsScreen({
     super.key,
@@ -42,6 +48,8 @@ class OSMDirectionStepsScreen extends StatefulWidget {
     required this.polylines,
     required this.steps,
     required this.markers,
+    required this.routeColor,
+    required this.highlightColor,
   });
 
   @override
@@ -55,6 +63,9 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
       OSMMapOfflineController();
 
   Widget? bottomInformationMarker;
+
+  bool showBottomInformation = false;
+  final controller = PageController(initialPage: 0);
 
   @override
   void initState() {
@@ -89,38 +100,65 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
           Positioned(
             bottom: 15,
             width: min(MediaQuery.of(context).size.width, 500),
-            child: Builder(builder: (context) {
-              if (bottomInformationMarker == null) {
-                return const SizedBox();
-              } else {
-                return bottomInformationMarker!;
-              }
-            }),
+            child: AnimatedScale(
+              scale: showBottomInformation ? 1 : 0,
+              duration: const Duration(milliseconds: 300),
+              child: SizedBox(
+                height: 140,
+                child: PageView.builder(
+                  itemCount: widget.steps.length,
+                  controller: controller,
+                  onPageChanged: (index) {
+                    addPathInformation(context, step: widget.steps[index]);
+                  },
+                  itemBuilder: (context, index) {
+                    return _bottomInfo(context, step: widget.steps[index]);
+                  },
+                ),
+              ),
+            ),
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.directions),
-        onPressed: () {
-          showRouteSteps(
-            context,
-            steps: widget.steps,
-            onClick: (OSMStep step) => addPathInformation(context, step: step),
-          );
-        },
+      floatingActionButton: AnimatedScale(
+        // visible: !showBottomInformation,
+        // maintainState: true,
+        scale: !showBottomInformation ? 1 : 0,
+        duration: const Duration(milliseconds: 300),
+        child: FloatingActionButton(
+          child: const Icon(Icons.directions),
+          onPressed: () {
+            showRouteSteps(
+              context,
+              steps: widget.steps,
+              onClick: (OSMStep step) =>
+                  addPathInformation(context, step: step),
+            );
+          },
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 
   void addPathInformation(BuildContext context, {required OSMStep step}) {
+    setState(() => showBottomInformation = true);
     osmMapOfflineController.removePolyline(1);
     osmMapOfflineController.addPolylines(
       points: step.points,
-      color: Colors.yellow,
+      color: widget.highlightColor,
       strokeWidth: 10,
     );
-    bottomInformationMarker = Container(
+    osmMapOfflineController.animateToPoint(LatLng(step.lat, step.lng));
+
+    debugPrint("Index  ${widget.steps.indexOf(step)}");
+    if (showBottomInformation) {
+      controller.jumpToPage(widget.steps.indexOf(step));
+    }
+  }
+
+  Widget _bottomInfo(BuildContext context, {required OSMStep step}) {
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20).copyWith(bottom: 40),
       // height: 60,
       padding: const EdgeInsets.all(10),
@@ -203,8 +241,9 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
                 padding: const EdgeInsets.all(3),
                 iconSize: 20,
                 onPressed: () {
+                  setState(() => showBottomInformation = false);
                   osmMapOfflineController.removePolyline(1);
-                  setState(() => bottomInformationMarker = null);
+                  // setState(() => bottomInformationMarker = null);
                 },
                 icon: const Icon(Icons.close),
               ),
@@ -212,12 +251,6 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
           ),
         ],
       ),
-    );
-
-    setState(() => bottomInformationMarker = bottomInformationMarker);
-
-    osmMapOfflineController.animateToPoint(
-      LatLng(step.lat, step.lng),
     );
   }
 }

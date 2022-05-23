@@ -143,8 +143,13 @@ class OSMMapOfflineControllerImplementation implements OSMMapOfflineController {
   }
 
   @override
-  void fetchDirection(BuildContext context,
-      {required LatLng startingpoint, required LatLng endpoint}) async {
+  void fetchDirection(
+    BuildContext context, {
+    required LatLng startingpoint,
+    required LatLng endpoint,
+    Color? highlightColor,
+    Color? routeColor,
+  }) async {
     DirectionService directionService = DirectionService();
     await directionService.getDirections(startingpoint, endpoint);
     List<LatLng> points = directionService.directionpoints;
@@ -152,7 +157,7 @@ class OSMMapOfflineControllerImplementation implements OSMMapOfflineController {
     List<Polyline> polylines = [];
     polylines.add(Polyline(
       points: points,
-      color: Colors.red,
+      color: routeColor ?? Colors.red.withOpacity(0.6),
       strokeWidth: 10,
     ));
     dev.log(points.length.toString());
@@ -193,6 +198,8 @@ class OSMMapOfflineControllerImplementation implements OSMMapOfflineController {
       polylines: polylines,
       markers: markersList,
       steps: directionService.steps,
+      routeColor: routeColor,
+      highlightColor: highlightColor,
     );
   }
 }

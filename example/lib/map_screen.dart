@@ -33,6 +33,8 @@ class _MapScreenState extends State<MapScreen> {
                   context,
                   startingpoint: LatLng(27.6822, 85.3176),
                   endpoint: LatLng(27.7013, 85.3400),
+                  routeColor: Colors.blue.withOpacity(0.6),
+                  highlightColor: Colors.purpleAccent.withOpacity(0.6),
                 );
 
                 // tracking = !tracking;
