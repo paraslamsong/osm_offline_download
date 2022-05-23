@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:osm_offline_download/services/fetch_direction_service.dart';
+import 'package:osm_offline_download/services/geocoding_service.dart';
 import 'package:osm_offline_download/services/location_listen_service.dart';
 import 'package:osm_offline_download/providers/map_layers_provider.dart';
 import 'package:osm_offline_download/navigation_screen/osm_direction_steps_screen.dart';
@@ -76,9 +77,9 @@ abstract class OSMMapOfflineController {
   // add markers to map
   void addMarkers({List<OSMMarker> markers = const []});
   // go to navigation with given start location adn end location
-  void fetchDirection(
+  void getDirection(
     BuildContext context, {
-    required LatLng startingpoint,
+    required LatLng startpoint,
     required LatLng endpoint,
     Color? highlightColor,
     Color? routeColor,
@@ -104,8 +105,10 @@ class OSMMapBox extends StatefulWidget {
     this.zoom,
     this.onUserLocationChange,
   }) : super(key: key);
+
   @override
   State<OSMMapBox> createState() => OSMMapBoxState();
+
   static Future<void> downloadOffline({
     required LatLng eastNorthLatLng,
     required LatLng southWestLatLng,
@@ -116,6 +119,16 @@ class OSMMapBox extends StatefulWidget {
       southWestLatLng: southWestLatLng,
       onProgress: onProgress,
     );
+  }
+
+  static Future<GeoCode> getGeoCoding({required String query}) {
+    GeoCode geoCode = GeoCode();
+    return geoCode.fetchGeoLocationUsingLocation(query);
+  }
+
+  static Future<ReverseGeoCode> getReverseGeoCoding({required LatLng coord}) {
+    ReverseGeoCode reverseGeoCode = ReverseGeoCode();
+    return reverseGeoCode.fetchLocationUsingGeoLocation(coord);
   }
 }
 

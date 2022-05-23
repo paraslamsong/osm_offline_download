@@ -2,7 +2,7 @@
 
 A Flutter package to enable osm tile to download along with other features like direction api inclusion and many more
 
-## Screen shot
+# Screen shot
 <div>
     <img src="map_sss.png" height="300"/>
     <img src="navigation1_ss.png" height="300"/>
@@ -56,6 +56,10 @@ controller.animateToPoint
 
 ## Download map tile for offline access
 OSMMapBox.downloadOffline
+
+## GeoCoding
+OSMMapBox.getGeoCoding
+OSMMapBox.getReverseGeoCoding
 
 
 

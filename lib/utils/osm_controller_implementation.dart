@@ -143,15 +143,15 @@ class OSMMapOfflineControllerImplementation implements OSMMapOfflineController {
   }
 
   @override
-  void fetchDirection(
+  void getDirection(
     BuildContext context, {
-    required LatLng startingpoint,
+    required LatLng startpoint,
     required LatLng endpoint,
     Color? highlightColor,
     Color? routeColor,
   }) async {
     DirectionService directionService = DirectionService();
-    await directionService.getDirections(startingpoint, endpoint);
+    await directionService.getDirections(startpoint, endpoint);
     List<LatLng> points = directionService.directionpoints;
     dev.log(points.length.toString());
     List<Polyline> polylines = [];
