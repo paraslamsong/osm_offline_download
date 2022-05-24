@@ -113,17 +113,16 @@ class OSMMapBox extends StatefulWidget {
     required LatLng eastNorthLatLng,
     required LatLng southWestLatLng,
     Function(double)? onProgress,
+    Function()? onDownloadCompleted,
+    Function(Object)? onError,
   }) async {
-    downloadService(
+    downloadMap(
       eastNorthLatLng: eastNorthLatLng,
       southWestLatLng: southWestLatLng,
       onProgress: onProgress,
+      onError: onError,
+      onDownloadCompleted: onDownloadCompleted,
     );
-    // downloadMap(
-    //   eastNorthLatLng: eastNorthLatLng,
-    //   southWestLatLng: southWestLatLng,
-    //   onProgress: onProgress,
-    // );
   }
 
   static Future<GeoCode> getGeoCoding({required String query}) {

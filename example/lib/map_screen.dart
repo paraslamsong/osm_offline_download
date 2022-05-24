@@ -61,6 +61,12 @@ class _MapScreenState extends State<MapScreen> {
                 debugPrint(p.toString());
                 setState(() => progress = p);
               },
+              onDownloadCompleted: () {
+                log("Tiles download completed");
+              },
+              onError: (error) {
+                log(error.toString());
+              },
             );
           },
           () {
