@@ -181,6 +181,7 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
             zoom: widget.zoom ?? 12,
             minZoom: 3,
             maxZoom: 16,
+            enableMultiFingerGestureRace: true,
           ),
           layers: [
             tileProvider(context, appDirectory),
@@ -196,6 +197,35 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
             ),
           ],
           mapController: controller,
+        ),
+        Positioned(
+          bottom: 5,
+          left: 5,
+          child: SafeArea(
+            child: Column(
+              children: [
+                FloatingActionButton(
+                  mini: true,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    double zoom = controller.zoom;
+                    animateMove(controller.center, zoom: zoom + 1);
+                  },
+                  child: const Icon(Icons.add),
+                ),
+                const SizedBox(height: 4),
+                FloatingActionButton(
+                  mini: true,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    double zoom = controller.zoom;
+                    animateMove(controller.center, zoom: zoom - 1);
+                  },
+                  child: const Icon(Icons.remove),
+                ),
+              ],
+            ),
+          ),
         ),
         Positioned(
           top: 0,
@@ -297,7 +327,7 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
 
   animateMove(LatLng latLng, {double? zoom}) {
     AnimationController animationController = AnimationController(
-        duration: const Duration(milliseconds: 1500), vsync: this);
+        duration: const Duration(milliseconds: 400), vsync: this);
     LatLng curretnLatLng = controller.center;
     final latTween =
         Tween<double>(begin: curretnLatLng.latitude, end: latLng.latitude);

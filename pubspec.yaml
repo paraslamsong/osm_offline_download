@@ -16,6 +16,7 @@ dependencies:
   location: ^4.4.0
   latlong2: ^0.8.1
   dio: ^4.0.6
+  provider: ^6.0.3
 
 dev_dependencies:
   flutter_test:
@@ -29,6 +30,8 @@ flutter:
         package: com.example.osm_offline_download
         pluginClass: OsmOfflineDownloadPlugin
       ios:
+        pluginClass: OsmOfflineDownloadPlugin
+      macos:
         pluginClass: OsmOfflineDownloadPlugin
 
   # To add assets to your plugin package, add an assets section, like this:

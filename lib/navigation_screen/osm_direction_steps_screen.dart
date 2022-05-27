@@ -1,14 +1,18 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:osm_offline_download/providers/api_validity_provider.dart';
+import 'package:osm_offline_download/utils/api_overlay.dart';
 import 'package:osm_offline_download/utils/capitalize_string.dart';
 import 'package:osm_offline_download/services/fetch_direction_service.dart';
 import 'package:osm_offline_download/osm_map_box.dart';
 import 'package:osm_offline_download/navigation_screen/show_route_bottom_sheet.dart';
 import 'package:osm_offline_download/utils/unit_convertor.dart';
+import 'package:provider/provider.dart';
 
 showOSMDirectionStepScreen(
   BuildContext context, {
@@ -104,36 +108,89 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
             child: AnimatedScale(
               scale: showBottomInformation ? 1 : 0,
               duration: const Duration(milliseconds: 300),
-              child: SizedBox(
-                height: 140,
-                child: PageView.builder(
-                  itemCount: widget.steps.length,
-                  controller: controller,
-                  onPageChanged: (index) {
-                    addPathInformation(context, step: widget.steps[index]);
-                  },
-                  itemBuilder: (context, index) {
-                    return _bottomInfo(context, step: widget.steps[index]);
-                  },
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 140,
+                    child: PageView.builder(
+                      itemCount: widget.steps.length,
+                      controller: controller,
+                      allowImplicitScrolling: true,
+                      onPageChanged: (index) {
+                        addPathInformation(context, step: widget.steps[index]);
+                      },
+                      itemBuilder: (context, index) {
+                        return _bottomInfo(context, step: widget.steps[index]);
+                      },
+                    ),
+                  ),
+                  Visibility(
+                    visible: Platform.isMacOS ||
+                        Platform.isWindows ||
+                        Platform.isLinux,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FloatingActionButton(
+                          mini: true,
+                          onPressed: () {
+                            controller.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.ease,
+                            );
+                          },
+                          child: const Icon(
+                            Icons.arrow_back_ios,
+                            size: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 30),
+                        FloatingActionButton(
+                          onPressed: () {
+                            controller.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.ease,
+                            );
+                          },
+                          mini: true,
+                          child: const RotatedBox(
+                            quarterTurns: 2,
+                            child: Icon(
+                              Icons.arrow_back_ios,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
               ),
             ),
-          )
+          ),
+          ChangeNotifierProvider(
+            create: (context) => MapValidity(context),
+            child: const APIValidityOverlay(),
+          ),
         ],
       ),
-      floatingActionButton: AnimatedScale(
-        scale: !showBottomInformation ? 1 : 0,
-        duration: const Duration(milliseconds: 300),
-        child: FloatingActionButton(
-          child: const Icon(Icons.directions),
-          onPressed: () {
-            showRouteSteps(
-              context,
-              steps: widget.steps,
-              onClick: (OSMStep step) =>
-                  addPathInformation(context, step: step),
-            );
-          },
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 10.0),
+        child: AnimatedScale(
+          scale: !showBottomInformation ? 1 : 0,
+          duration: const Duration(milliseconds: 300),
+          child: FloatingActionButton(
+            child: const Icon(Icons.directions),
+            onPressed: () {
+              showRouteSteps(
+                context,
+                steps: widget.steps,
+                onClick: (OSMStep step) =>
+                    addPathInformation(context, step: step),
+              );
+            },
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,

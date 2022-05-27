@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:osm_offline_download/osm_map_box.dart';
 import 'package:osm_offline_download/services/geocoding_service.dart';
+import 'package:osm_offline_download/yeti_tech_osm.dart';
 import 'package:speed_dial_fab/speed_dial_fab.dart';
 
 class MapScreen extends StatefulWidget {
@@ -24,8 +25,9 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: OSMMapBox(
+      body: YetiTechOsm(
         controller: controller,
+        apiKey: "123456789000000",
         locationTrack: false,
         enableLocation: false,
       ),
