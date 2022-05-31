@@ -13,6 +13,7 @@ import 'package:osm_offline_download/providers/map_layers_provider.dart';
 import 'package:osm_offline_download/navigation_screen/osm_direction_steps_screen.dart';
 import 'package:osm_offline_download/location_points/ripple_point.dart';
 import 'package:osm_offline_download/utils/osm_controller_implementation.dart';
+import 'package:osm_offline_download/utils/singleton_class.dart';
 import 'services/download_map_service.dart';
 
 // OSM Marker class
@@ -182,6 +183,7 @@ class OSMMapBoxState extends State<OSMMapBox> with TickerProviderStateMixin {
             minZoom: 3,
             maxZoom: 16,
             enableMultiFingerGestureRace: true,
+            debugMultiFingerGestureWinner: true,
           ),
           layers: [
             tileProvider(context, appDirectory),

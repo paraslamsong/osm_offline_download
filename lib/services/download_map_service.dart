@@ -1,14 +1,23 @@
+import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:osm_offline_download/utils/api_calls.dart';
+import 'package:osm_offline_download/utils/singleton_class.dart';
 import 'package:path_provider/path_provider.dart';
 
-class TileXYZ {
+class Tile {
+  late String imageUrl;
   late int x, y, z;
-  TileXYZ(this.x, this.y, this.z);
+  Tile.fromMap(map) {
+    imageUrl = map['url'];
+    x = map['x'];
+    y = map['y'];
+    z = map['z'];
+  }
 }
 
 Future<String> getTileDirectoryPath() async {
@@ -35,35 +44,15 @@ Future<void> downloadMap({
   Function()? onDownloadCompleted,
 }) async {
   String appDocumentsPath = await getTileDirectoryPath();
+  double x1 = southWestLatLng.latitude;
+  double y1 = southWestLatLng.longitude;
+  double x2 = eastNorthLatLng.latitude;
+  double y2 = eastNorthLatLng.longitude;
 
-  TileXYZ getTileFromLatLng(LatLng latlng, int zoom) {
-    double latRad = latlng.latitude * pi / 180;
-    num n = pow(2, zoom);
-    int xtile = n * (latlng.longitude + 180) ~/ 360;
-    int ytile =
-        ((n / 2) * (1 - log(tan(latRad) + 1 / (cos(latRad))) / pi)).toInt();
-    return TileXYZ(xtile, ytile, zoom);
-  }
-
-  List<TileXYZ> getTilesList(TileXYZ northeast, TileXYZ southwest) {
-    List<TileXYZ> tilesList = [];
-    int minX = min(southwest.x, northeast.x);
-    int maxX = max(southwest.x, northeast.x);
-
-    int minY = min(northeast.y, southwest.y);
-    int maxY = max(northeast.y, southwest.y);
-
-    for (int i = minX; i <= maxX; i++) {
-      for (int j = minY; j <= maxY; j++) {
-        tilesList.add(TileXYZ(i, j, northeast.z));
-      }
-    }
-    return tilesList;
-  }
-
-  Future<void> saveTile(int x, int y, int z) async {
-    String imageUrl = 'https://tile.openstreetmap.org/$z/$x/$y.png';
-    String filePath = '$appDocumentsPath/tile-$z-$x-$y.png';
+  Future<void> saveTile(Tile tile) async {
+    String imageUrl = tile.imageUrl;
+    String filePath =
+        '$appDocumentsPath/tile-${tile.z}-${tile.x}-${tile.y}.png';
     File file = File(filePath);
     if (!file.existsSync()) {
       await NetworkAssetBundle(Uri.parse(imageUrl)).load("").then((imageData) {
@@ -76,28 +65,26 @@ Future<void> downloadMap({
   }
 
   try {
-    List<TileXYZ> tiles = [];
-    for (int zoom = 2; zoom <= 16; zoom++) {
-      TileXYZ southwestTile = getTileFromLatLng(southWestLatLng, zoom);
-      TileXYZ northeastTile = getTileFromLatLng(eastNorthLatLng, zoom);
-      List<TileXYZ> zoomTiles = getTilesList(northeastTile, southwestTile);
-
-      for (var zoomtile in zoomTiles) {
-        tiles.add(zoomtile);
+    Response response = await API().get(
+        "download-map/?x1=$x1&y1=$y1&x2=$x2&y2=$y2&API_KEY=${Constants().apiKey}&APP_KEY=${Constants().appId}");
+    if (response.statusCode == 200) {
+      log(response.data.toString());
+      var tiles = response.data['data'];
+      int index = 0;
+      int total = tiles.length;
+      for (var tile in tiles) {
+        if (onProgress != null) {
+          onProgress(index / total);
+        }
+        index++;
+        await saveTile(Tile.fromMap(tile));
       }
-    }
-    int index = 0;
-    int total = tiles.length;
-    for (var tile in tiles) {
       if (onProgress != null) {
-        onProgress(index / total);
+        onProgress(1.0);
+        onDownloadCompleted!();
       }
-      index++;
-      await saveTile(tile.x, tile.y, tile.z);
-    }
-    if (onProgress != null) {
-      onProgress(1.0);
-      onDownloadCompleted!();
+    } else {
+      onError!(Error.safeToString(response.data['data']));
     }
   } catch (error) {
     onError!(error);

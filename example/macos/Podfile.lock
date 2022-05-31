@@ -7,6 +7,8 @@ PODS:
     - FlutterMacOS
   - osm_offline_download (0.0.1):
     - FlutterMacOS
+  - package_info_plus_macos (0.0.1):
+    - FlutterMacOS
   - path_provider_macos (0.0.1):
     - FlutterMacOS
   - sqflite (0.0.2):
@@ -17,6 +19,7 @@ DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
   - location (from `Flutter/ephemeral/.symlinks/plugins/location/macos`)
   - osm_offline_download (from `Flutter/ephemeral/.symlinks/plugins/osm_offline_download/macos`)
+  - package_info_plus_macos (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus_macos/macos`)
   - path_provider_macos (from `Flutter/ephemeral/.symlinks/plugins/path_provider_macos/macos`)
   - sqflite (from `Flutter/ephemeral/.symlinks/plugins/sqflite/macos`)
 
@@ -31,6 +34,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/location/macos
   osm_offline_download:
     :path: Flutter/ephemeral/.symlinks/plugins/osm_offline_download/macos
+  package_info_plus_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus_macos/macos
   path_provider_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/path_provider_macos/macos
   sqflite:
@@ -41,6 +46,7 @@ SPEC CHECKSUMS:
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   location: 7cdb0665bd6577d382b0a343acdadbcb7f964775
   osm_offline_download: ef6ad9ddc0703a651c0418e4ba258590585945bd
+  package_info_plus_macos: f010621b07802a241d96d01876d6705f15e77c1c
   path_provider_macos: 3c0c3b4b0d4a76d2bf989a913c2de869c5641a19
   sqflite: a5789cceda41d54d23f31d6de539d65bb14100ea
 

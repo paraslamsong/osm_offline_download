@@ -23,7 +23,6 @@ class ApiKey {
     return _instance;
   }
   ApiKey._internal();
-
   String _apiKey = "";
   setApiKey(String api) => _apiKey = api;
   String apiKey() => _apiKey;

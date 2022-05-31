@@ -27,7 +27,7 @@ class _MapScreenState extends State<MapScreen> {
     return Scaffold(
       body: YetiTechOsm(
         controller: controller,
-        apiKey: "123456789000000",
+        apiKey: "123",
         locationTrack: false,
         enableLocation: false,
       ),
@@ -149,7 +149,7 @@ class _MapScreenState extends State<MapScreen> {
           }
         }),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

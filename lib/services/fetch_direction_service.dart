@@ -1,7 +1,7 @@
 import 'dart:developer';
-
-import 'package:dio/dio.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:osm_offline_download/utils/api_calls.dart';
+import 'package:osm_offline_download/utils/singleton_class.dart';
 
 class OSMStep {
   late double lat, lng;
@@ -27,19 +27,18 @@ class OSMStep {
 
 class DirectionService {
   List<LatLng> directionpoints = [];
-  late LatLng startingPoint, endPoint;
   List<OSMStep> steps = [];
-
   getDirections(LatLng startingpoint, LatLng endpoint) async {
-    startingPoint = startingpoint;
-    endPoint = endpoint;
+    double x1 = startingpoint.latitude;
+    double y1 = startingpoint.longitude;
+    double x2 = endpoint.latitude;
+    double y2 = endpoint.longitude;
     String directionApiUrl =
-        '''https://routing.openstreetmap.de/routed-car/route/v1/driving/${startingpoint.longitude},${startingpoint.latitude};${endpoint.longitude},${endpoint.latitude}?overview=false&geometries=polyline&steps=true''';
-
+        "get-direction/?x1=$x1&y1=$y1&x2=$x2&y2=$y2&API_KEY=${Constants().apiKey}&APP_KEY=${Constants().appId}";
     log(directionApiUrl);
-    var response = await Dio().get(directionApiUrl);
-
+    var response = await API().get(directionApiUrl);
     if (response.statusCode == 200) {
+      log(response.data.toString());
       directionpoints = [];
       steps = [];
       for (var route in response.data['routes']) {
@@ -54,6 +53,10 @@ class DirectionService {
           }
         }
       }
+      log("Steps${steps.length}");
+      log("Directions${directionpoints.length}");
+    } else {
+      log(response.data['data']);
     }
   }
 }

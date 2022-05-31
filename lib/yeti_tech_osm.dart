@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:osm_offline_download/osm_map_box.dart';
 import 'package:osm_offline_download/providers/api_validity_provider.dart';
 import 'package:osm_offline_download/utils/api_overlay.dart';
+import 'package:osm_offline_download/utils/singleton_class.dart';
 import 'package:provider/provider.dart';
 
 class YetiTechOsm extends StatefulWidget {
@@ -38,27 +40,20 @@ class YetiTechOsm extends StatefulWidget {
 class _YetiTechOsmState extends State<YetiTechOsm> {
   @override
   Widget build(BuildContext context) {
-    ApiKey().setApiKey(widget.apiKey);
-    return ChangeNotifierProvider(
-      create: (context) => MapValidity(context),
-      child: Builder(builder: (ctx) {
-        // checkAPIKeyValidity(ctx, widget.apiKey);
-        return Stack(
-          children: [
-            OSMMapBox(
-              controller: widget.controller,
-              locationTrack: widget.locationTrack,
-              enableLocation: widget.enableLocation,
-              center: widget.center,
-              polylines: widget.polylines,
-              markers: widget.markers,
-              zoom: widget.zoom,
-              onUserLocationChange: widget.onUserLocationChange,
-            ),
-            const APIValidityOverlay(),
-          ],
-        );
-      }),
+    FlutterError.onError = (FlutterErrorDetails details) {
+      log(details.exception.toString());
+      FlutterError.presentError(details);
+    };
+    Constants().getSetCredentials(widget.apiKey);
+    return OSMMapBox(
+      controller: widget.controller,
+      locationTrack: widget.locationTrack,
+      enableLocation: widget.enableLocation,
+      center: widget.center,
+      polylines: widget.polylines,
+      markers: widget.markers,
+      zoom: widget.zoom,
+      onUserLocationChange: widget.onUserLocationChange,
     );
   }
 }

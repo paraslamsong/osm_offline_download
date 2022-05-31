@@ -169,10 +169,6 @@ class _OSMDirectionStepsScreenState extends State<OSMDirectionStepsScreen>
               ),
             ),
           ),
-          ChangeNotifierProvider(
-            create: (context) => MapValidity(context),
-            child: const APIValidityOverlay(),
-          ),
         ],
       ),
       floatingActionButton: Padding(
